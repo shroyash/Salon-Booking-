@@ -69,6 +69,14 @@ class ServiceAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('duration_minutes', response.data)
 
+    def test_invalid_type_payload_validation(self) -> None:
+        """Verify non-numeric price or duration fails with 400 Bad Request."""
+        payload = {**self.valid_payload, 'price': 'invalid', 'duration_minutes': 'abc'}
+        response = self.client.post(self.list_create_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('price', response.data)
+        self.assertIn('duration_minutes', response.data)
+
     def test_successful_service_list(self) -> None:
         """Verify GET /api/services/ returns only active services."""
         Service.objects.create(name='Facial', price=Decimal('1500.00'), duration_minutes=60, is_active=True)
@@ -78,6 +86,15 @@ class ServiceAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], 'Facial')
+
+    def test_successful_service_detail_retrieval(self) -> None:
+        """Verify GET /api/services/:id/ returns single service details with 200 OK."""
+        service = Service.objects.create(name='Facial', price=Decimal('1500.00'), duration_minutes=60)
+        url = reverse('services:service-detail', kwargs={'pk': service.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], service.pk)
+        self.assertEqual(response.data['name'], 'Facial')
 
     def test_successful_update(self) -> None:
         """Verify PUT /api/services/:id/ updates fields correctly."""

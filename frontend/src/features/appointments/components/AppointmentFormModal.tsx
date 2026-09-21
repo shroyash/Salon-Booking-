@@ -189,7 +189,7 @@ export const AppointmentFormModal: React.FC<AppointmentFormModalProps> = ({
             Cancel
           </Button>
           <Button type="submit" variant="primary" isLoading={isSubmitting}>
-            Book Appointment
+            Book Appointment with {services.find((s) => s.id === serviceId)?.name || 'Service'}
           </Button>
         </div>
       </form>
